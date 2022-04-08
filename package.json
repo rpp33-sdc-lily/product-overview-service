@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "express": "^4.17.3",
+    "pg": "^8.7.3"
+  },
+  "devDependencies": {
+    "jest": "^27.5.1",
+    "supertest": "^6.2.2"
+  },
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest  --watch",
+    "start": "npx nodemon server/start.js",
+    "database": "node database/index.js"
+  }
+}
