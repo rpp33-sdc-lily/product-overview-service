@@ -80,16 +80,18 @@ client.connect();
 
 
 
-var insertQuery = `INSERT INTO productoverview.products(name, slogan, description, category, default_price) VALUES ('Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', '0')`
-client.query(insertQuery, (err, res) => {
-	if (err) {
-		console.log('error inserting to products table! ', err);
-	}
-	else {
-		console.log('inserting success! ');
-	}
-})
+// var insertQuery = `INSERT INTO productoverview.products(name, slogan, description, category, default_price) VALUES ('Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', '0')`
+// client.query(insertQuery, (err, res) => {
+// 	if (err) {
+// 		console.log('error inserting to products table! ', err);
+// 	}
+// 	else {
+// 		console.log('inserting success! ');
+// 	}
+// })
 
+
+// For GET /products
 client.query('Select * from productoverview.products', (err, res) => {
 	if (err) {
 		console.log('error in database!', err);
@@ -99,6 +101,18 @@ client.query('Select * from productoverview.products', (err, res) => {
 	}
 	client.end;
 })
+
+
+// For GET /products/:product_id
+// client.query('Select * from productoverview.products', (err, res) => {
+// 	if (err) {
+// 		console.log('error in database!', err);
+// 	}
+// 	else {
+// 		console.log('database is working! ', res.rows);
+// 	}
+// 	client.end;
+// })
 
 // INSERT INTO productoverview.products(name, slogan, description, category, default_price)
 // VALUES ("Camo Onesie", "Blend in to your crowd", "The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.", "Jackets", 0);
