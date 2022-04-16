@@ -85,4 +85,20 @@ CREATE TABLE IF NOT EXISTS productoverview.styles (
 
 -- SELECT * FROM productoverview.skus ORDER BY id LIMIT 10;
 
-SELECT * FROM productoverview.styles ORDER BY id LIMIT 10;
+-- SELECT * FROM productoverview.styles ORDER BY id LIMIT 10;
+
+
+select row_to_json(t)
+from (
+  select id, slogan,
+    (
+      select array_to_json(array_agg(row_to_json(d)))
+      from (
+        select feature, value
+        from productoverview.features
+        where product_id=11
+      ) d
+    ) as features
+  from productoverview.products
+  where id = 11
+) t

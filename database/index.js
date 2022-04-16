@@ -66,6 +66,7 @@
 //   return pool.query(text, values);
 // }
 
+
 const {Client} = require('pg')
 
 const client = new Client({
@@ -78,6 +79,57 @@ const client = new Client({
 
 client.connect();
 
+
+const dummyData = [
+	{
+    id: 1,
+    name: 'Camo Onesie',
+    slogan: 'Blend in to your crowd',
+    description: 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.',
+    category: 'Jackets',
+    default_price: '140'
+  },
+  {
+    id: 2,
+    name: 'Bright Future Sunglasses',
+    slogan: "You've got to wear shades",
+    description: "Where you're going you might not need roads, but you definitely need some shades. Give those baby blues a rest and let the future shine bright on these timeless lenses.",
+    category: 'Accessories',
+    default_price: '69'
+  },
+  {
+    id: 3,
+    name: 'Morning Joggers',
+    slogan: 'Make yourself a morning person',
+    description: "Whether you're a morning person or not.  Whether you're gym bound or not.  Everyone looks good in joggers.",
+    category: 'Pants',
+    default_price: '40'
+  },
+  {
+    id: 4,
+    name: "Slacker's Slacks",
+    slogan: 'Comfortable for everything, or nothing',
+    description: "I'll tell you how great they are after I nap for a bit.",
+    category: 'Pants',
+    default_price: '65'
+  },
+  {
+    id: 5,
+    name: 'Heir Force Ones',
+    slogan: 'A sneaker dynasty',
+    description: "Now where da boxes where I keep mine? You should peep mine, maybe once or twice but never three times. I'm just a sneaker pro, I love Pumas and shell toes, but can't nothin compare to a fresh crispy white pearl",
+    category: 'Kicks',
+    default_price: '99'
+  },
+  {
+    id: 6,
+    name: 'Pumped Up Kicks',
+    slogan: 'Faster than a just about anything',
+    description: 'The Pumped Up serves up crisp court style with a modern look. These shoes show off tennis-whites shades and are constructed with a supple leather upper and a classic rubber cupsole.',
+    category: 'Kicks',
+    default_price: '89'
+  }
+]
 
 
 // var insertQuery = `INSERT INTO productoverview.products(name, slogan, description, category, default_price) VALUES ('Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', '0')`
@@ -92,27 +144,125 @@ client.connect();
 
 
 // For GET /products
-client.query('Select * from productoverview.products', (err, res) => {
-	if (err) {
-		console.log('error in database!', err);
-	}
-	else {
-		console.log('database is working! ', res.rows);
-	}
-	client.end;
-})
+// TODO: implement page and count parameters
+const getAllProducts = (req, res) => {
+	client.query('Select * from productoverview.products limit 3', (err, results) => {
+		if (err) {
+			console.log('error in products database!', err);
+		}
+		else {
+			console.log('products database is working! ', results.rows);
+			res.status(200).json(results.rows);
+		}
+	})
+	// console.log('dummyData is: ', dummyData);
+	// res.status(200).json(dummyData);
+};
+
 
 
 // For GET /products/:product_id
-// client.query('Select * from productoverview.products', (err, res) => {
+const getProductByID = (req, res) => {
+	const product_id = req.params.product_id;
+	console.log('product_id is: ', product_id);
+
+
+	// var getProductByIDQuery = "SELECT productoverview.products.id, productoverview.products.slogan, productoverview.features.product_id, productoverview.features.feature FROM productoverview.products INNER JOIN productoverview.features ON productoverviews.products.id=productoverviews.features.product_id";
+	// var getProductByIDQuery = "SELECT json_build_object(
+	// 	'id', (select product),   // this is actually product_id
+	// 	'name', (),
+	// 	'slogan', (),
+	// 	'description', (),
+	// 	'category', (),
+	// 	'default_price', (),
+	// 	'feature', ()
+
+		// var getProductByIDQuery = `SELECT row_to_json(productoverview.products)`
+		// + ` FROM (SELECT * FROM "productoverview.products") AS products LIMIT 3`;
+
+		// var getProductByIDQuery = 'SELECT row_to_json(row(id, slogan)) FROM productoverview.products WHERE id = 11';
+		// var getProductByIDQuery = 'SELECT array_to_json(array_agg((row_to_json(t))) from (select id, slogan from productoverview.products ) t';
+		// var getProductByIDQuery = 'SELECT array_to_json(array_agg(row_to_json(t))) from (select id, slogan from productoverview.products limit 1) t';
+		var getProductByIDQuery = `SELECT row_to_json(p) from (select id, name, slogan, description, category, default_price, ` +
+				`(select array_to_json(array_agg(row_to_json(f))) ` +
+				`from (select feature, value from productoverview.features where product_id = ${product_id}) f) as features ` +
+
+		`from productoverview.products where id = ${product_id}) p`;
+
+	client.query(getProductByIDQuery, (err, results) => {
+		if (err) {
+			console.log('error in database!', err);
+		}
+		else {
+			console.log('database is working! ', results.rows[0].row_to_json);
+			res.status(200).json(results.rows[0].row_to_json);
+		}
+		// client.end;
+	})
+}; // try product_id = 64620
+
+
+const getProductStyles = (req, res) => {
+	client.query('Select * from productoverview.cart', (err, results) => {
+		if (err) {
+			console.log('error in cart database!', err);
+		}
+		else {
+			console.log('cart database is working! ', results.rows);
+		}
+	})
+}
+
+
+
+// client.query('Select * from productoverview.features', (err, res) => {
 // 	if (err) {
-// 		console.log('error in database!', err);
+// 		console.log('error in features database!', err);
 // 	}
 // 	else {
-// 		console.log('database is working! ', res.rows);
+// 		console.log('features database is working! ', res.rows);
 // 	}
 // 	client.end;
 // })
 
+// client.query('Select * from productoverview.photos', (err, res) => {
+// 	if (err) {
+// 		console.log('error in photo database!', err);
+// 	}
+// 	else {
+// 		console.log('photo database is working! ', res.rows);
+// 	}
+// 	client.end;
+// })
+
+// client.query('Select * from productoverview.skus', (err, res) => {
+// 	if (err) {
+// 		console.log('error in skus database!', err);
+// 	}
+// 	else {
+// 		console.log('skus database is working! ', res.rows);
+// 	}
+// 	client.end;
+// })
+
+// client.query('Select * from productoverview.styles', (err, res) => {
+// 	if (err) {
+// 		console.log('error in style database!', err);
+// 	}
+// 	else {
+// 		console.log('style database is working! ', res.rows);
+// 	}
+// 	client.end;
+// })
+
+
 // INSERT INTO productoverview.products(name, slogan, description, category, default_price)
 // VALUES ("Camo Onesie", "Blend in to your crowd", "The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.", "Jackets", 0);
+
+module.exports = {
+	getAllProducts: getAllProducts,
+	getProductByID: getProductByID,
+	getProductStyles: getProductStyles
+}
+
+// curl http://localhost:5000/products

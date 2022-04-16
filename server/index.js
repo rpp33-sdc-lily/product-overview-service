@@ -1,27 +1,39 @@
 // this is my server
 const express = require('express');
 const app = express();
+const db = require('../database/index.js');
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
-var bodyParser = require('body-parser');
+// var bodyParser = require('body-parser');
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+// console.dir(req.params.name);
 
 
-app.get('/products', (req, res) => {
-	res.statusCode(200).send('request to /products received!');
-})
 
-app.get('/products/:product_id', (req, res) => {
-	res.statusCode(200).send('request to /products/:product_id received!');
-})
+// app.get('/products', (req, res) => {
+// 	res.statusCode(200).send('request to /products received!');
+// })
 
-app.get('/products/:product_id/styles', (req, res) => {
-	res.statusCode(200).send('request to /products/:product_id/styles received!');
-})
+app.get('/products', db.getAllProducts);
 
-app.get('/products/:product_id/related', (req, res) => {
-	res.statusCode(200).send('request to /products/:product_id/related received!');
-})
+app.get('/products/:product_id', db.getProductByID);
+
+app.get('/products/:product_id/styles', db.getProductStyles);
+
+
+
+// app.get('/products/:product_id', (req, res) => {
+// 	res.statusCode(200).send('request to /products/:product_id received!');
+// })
+
+// app.get('/products/:product_id/styles', (req, res) => {
+// 	res.statusCode(200).send('request to /products/:product_id/styles received!');
+// })
+
+// app.get('/products/:product_id/related', (req, res) => {
+// 	res.statusCode(200).send('request to /products/:product_id/related received!');
+// })
 
 
 
