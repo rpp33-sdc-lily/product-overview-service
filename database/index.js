@@ -159,6 +159,22 @@ const getAllProducts = (req, res) => {
 	// res.status(200).json(dummyData);
 };
 
+// remake getAllProducts here!!!!
+// const getAllProducts = function {
+// 	client.query('Select * from productoverview.products limit 3', (err, results) => {
+// 		if (err) {
+// 			console.log('error in products database!', err);
+// 		}
+// 		else {
+// 			console.log('products database is working! ', results.rows);
+// 			return results.rows;
+// 		}
+// 	})
+// 	// console.log('dummyData is: ', dummyData);
+// 	// res.status(200).json(dummyData);
+
+// };
+
 
 
 // For GET /products/:product_id
@@ -203,12 +219,39 @@ const getProductByID = (req, res) => {
 
 
 const getProductStyles = (req, res) => {
-	client.query('Select * from productoverview.cart', (err, results) => {
+	const product_id = req.params.product_id;
+	console.log('product_id in styles is: ', product_id);
+	const productStyleQuery = `select row_to_json(t) ` +
+		`from ( ` +
+		`select productId as product_id, ` +
+		`(` +
+		'select array_to_json(array_agg(row_to_json(d))) ' +
+		`from (	` +
+		`select id as style_id, name, original_price, default_style as default, ( ` +
+		`select array_to_json(array_agg(row_to_json(p))) ` +
+		`from ( ` +
+		`select productoverview.photos.thumbnail_url, productoverview.photos.url ` +
+		`from productoverview.photos, productoverview.styles ` +
+		`where ` +
+		`productoverview.photos.styleId = productoverview.styles.id ` +
+		`and productoverview.styles.productId = 1 ` +
+		`) p ` +
+		`) as photos ` +
+		`from productoverview.styles ` +
+		`where productId = 1 ` +
+		`) d ` +
+		`) as results ` +
+		`from productoverview.styles ` +
+		`where productId = 1 ` +
+		`) t; `;
+
+	client.query(productStyleQuery, (err, results) => {
 		if (err) {
 			console.log('error in cart database!', err);
 		}
 		else {
-			console.log('cart database is working! ', results.rows);
+			console.log('style query is working! ', results.rows);
+			res.status(200).json(results.rows);
 		}
 	})
 }

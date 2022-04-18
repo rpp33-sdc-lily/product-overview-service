@@ -11,6 +11,9 @@
 
 --  DROP TABLE productoverview.styles;
 
+-- SELECT pg_cancel_backend(pid) FROM pg_stat_activity WHERE state = 'active' and pid <> pg_backend_pid();
+
+-- select pg_cancel_backend(3659);
 
 CREATE SCHEMA IF NOT EXISTS productoverview
     AUTHORIZATION postgres;
@@ -88,17 +91,61 @@ CREATE TABLE IF NOT EXISTS productoverview.styles (
 -- SELECT * FROM productoverview.styles ORDER BY id LIMIT 10;
 
 
+-- select row_to_json(t)
+-- from (
+--   select id, slogan,
+--     (
+--       select array_to_json(array_agg(row_to_json(d)))
+--       from (
+--         select feature, value
+--         from productoverview.features
+--         where product_id=11
+--       ) d
+--     ) as features
+--   from productoverview.products
+--   where id = 11
+-- ) t
+
 select row_to_json(t)
 from (
-  select id, slogan,
+  select productId as product_id,
     (
       select array_to_json(array_agg(row_to_json(d)))
       from (
-        select feature, value
-        from productoverview.features
-        where product_id=11
+        -- select id as style_id, name, default_style as default
+				select id as style_id, name, original_price, default_style as default, (
+					select array_to_json(array_agg(row_to_json(p)))
+					from (
+						select productoverview.photos.thumbnail_url, productoverview.photos.url
+						from productoverview.photos, productoverview.styles
+						where
+						productoverview.photos.styleId = productoverview.styles.id
+						and productoverview.styles.productId = 1
+
+						-- 	select productoverview.photos.thumbnail_url, productoverview.photos.url
+						-- from productoverview.photos where ()
+					) p
+				) as photos
+        from productoverview.styles
+        where productId = 1
       ) d
-    ) as features
-  from productoverview.products
-  where id = 11
-) t
+    ) as results
+  from productoverview.styles
+  where productId = 1
+) t;
+
+-- select * from productoverview.styles limit 3;
+
+-- select * from pg_stat_activity where state = 'active';
+
+-- select thumbnail_url, url
+-- 	from productoverview.photos, productoverview.styles
+	-- inner join productoverview.styles
+	-- 	inner join (select * from productoverview.styles as styles where styles.productId = 8)
+	-- on productoverview.photos.styleId = productoverview.styles.id;
+
+	-- select productoverview.photos.thumbnail_url, productoverview.photos.url
+	-- from productoverview.photos, productoverview.styles
+	-- where
+	-- 	productoverview.photos.styleId = productoverview.styles.id
+	-- 	and productoverview.styles.productId = 8;

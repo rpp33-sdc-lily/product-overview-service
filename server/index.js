@@ -17,6 +17,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.get('/products', db.getAllProducts);
 
+app.get('/products', (req, res) => {
+  // query results from database
+	db.getAllProducts();
+	// send back error or query results
+});
+
+
 app.get('/products/:product_id', db.getProductByID);
 
 app.get('/products/:product_id/styles', db.getProductStyles);
