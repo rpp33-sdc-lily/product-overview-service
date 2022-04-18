@@ -133,72 +133,49 @@ const dummyData = [
 
 
 // var insertQuery = `INSERT INTO productoverview.products(name, slogan, description, category, default_price) VALUES ('Camo Onesie', 'Blend in to your crowd', 'The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.', 'Jackets', '0')`
-// client.query(insertQuery, (err, res) => {
-// 	if (err) {
-// 		console.log('error inserting to products table! ', err);
-// 	}
-// 	else {
-// 		console.log('inserting success! ');
-// 	}
-// })
+
 
 
 // For GET /products
 // TODO: implement page and count parameters
-const getAllProducts = (req, res) => {
-	client.query('Select * from productoverview.products limit 3', (err, results) => {
-		if (err) {
-			console.log('error in products database!', err);
-		}
-		else {
-			console.log('products database is working! ', results.rows);
-			res.status(200).json(results.rows);
-		}
-	})
-	// console.log('dummyData is: ', dummyData);
-	// res.status(200).json(dummyData);
-};
 
-// remake getAllProducts here!!!!
-// const getAllProducts = function {
+// OLD VERSION
+// const getAllProducts = (req, res) => {
 // 	client.query('Select * from productoverview.products limit 3', (err, results) => {
 // 		if (err) {
 // 			console.log('error in products database!', err);
 // 		}
 // 		else {
 // 			console.log('products database is working! ', results.rows);
-// 			return results.rows;
+// 			res.status(200).json(results.rows);
 // 		}
 // 	})
 // 	// console.log('dummyData is: ', dummyData);
 // 	// res.status(200).json(dummyData);
-
 // };
+
+// remake getAllProducts here!!!!
+const getAllProducts = new Promise((resolve, reject) => {
+	client.query('Select * from productoverview.products limit 3', (err, results) => {
+		if (err) {
+			console.log('error in products database!', err);
+			reject(err);
+		}
+		else {
+			console.log('products database is working! ', results.rows);
+			resolve(results.rows);
+		}
+	})
+	// console.log('dummyData is: ', dummyData);
+	// res.status(200).json(dummyData);
+});
 
 
 
 // For GET /products/:product_id
-const getProductByID = (req, res) => {
-	const product_id = req.params.product_id;
-	console.log('product_id is: ', product_id);
-
-
-	// var getProductByIDQuery = "SELECT productoverview.products.id, productoverview.products.slogan, productoverview.features.product_id, productoverview.features.feature FROM productoverview.products INNER JOIN productoverview.features ON productoverviews.products.id=productoverviews.features.product_id";
-	// var getProductByIDQuery = "SELECT json_build_object(
-	// 	'id', (select product),   // this is actually product_id
-	// 	'name', (),
-	// 	'slogan', (),
-	// 	'description', (),
-	// 	'category', (),
-	// 	'default_price', (),
-	// 	'feature', ()
-
-		// var getProductByIDQuery = `SELECT row_to_json(productoverview.products)`
-		// + ` FROM (SELECT * FROM "productoverview.products") AS products LIMIT 3`;
-
-		// var getProductByIDQuery = 'SELECT row_to_json(row(id, slogan)) FROM productoverview.products WHERE id = 11';
-		// var getProductByIDQuery = 'SELECT array_to_json(array_agg((row_to_json(t))) from (select id, slogan from productoverview.products ) t';
-		// var getProductByIDQuery = 'SELECT array_to_json(array_agg(row_to_json(t))) from (select id, slogan from productoverview.products limit 1) t';
+const getProductByID = (product_id, callback) => {
+	// const product_id = req.params.product_id;
+	// console.log('product_id is: ', product_id);
 		var getProductByIDQuery = `SELECT row_to_json(p) from (select id, name, slogan, description, category, default_price, ` +
 				`(select array_to_json(array_agg(row_to_json(f))) ` +
 				`from (select feature, value from productoverview.features where product_id = ${product_id}) f) as features ` +
@@ -208,19 +185,22 @@ const getProductByID = (req, res) => {
 	client.query(getProductByIDQuery, (err, results) => {
 		if (err) {
 			console.log('error in database!', err);
+			callback(err, null);
 		}
 		else {
+			// console.log('database is working! ', results.rows[0].row_to_json);
 			console.log('database is working! ', results.rows[0].row_to_json);
-			res.status(200).json(results.rows[0].row_to_json);
+			callback(null, results.rows[0].row_to_json);
+			// res.status(200).json(results.rows[0].row_to_json);
 		}
 		// client.end;
-	})
+	});
 }; // try product_id = 64620
 
 
-const getProductStyles = (req, res) => {
-	const product_id = req.params.product_id;
-	console.log('product_id in styles is: ', product_id);
+const getProductStyles = new Promise((resolve, reject) => {
+	// const product_id = req.params.product_id;
+	// console.log('product_id in styles is: ', product_id);
 	const productStyleQuery = `select row_to_json(t) ` +
 		`from ( ` +
 		`select productId as product_id, ` +
@@ -248,13 +228,15 @@ const getProductStyles = (req, res) => {
 	client.query(productStyleQuery, (err, results) => {
 		if (err) {
 			console.log('error in cart database!', err);
+			reject(err);
 		}
 		else {
 			console.log('style query is working! ', results.rows);
-			res.status(200).json(results.rows);
+			resolve(results.rows);
+			// res.status(200).json(results.rows);
 		}
 	})
-}
+});
 
 
 

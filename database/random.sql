@@ -24,7 +24,8 @@ select
 					'original_price', s.original_price,
 					'sale_price', s.sale_price,
 					'default?', s.default_style,
-					'photos', photos
+					'photos', photos,
+					'skus', skus
 				)
 			)
 	) styles
@@ -36,7 +37,29 @@ left join (
 							 'thumbnail_url', p.thumbnail_url,
 							 'url', p.url
 						 )
-				 ) photos
-
-from productoverview.photos p group by 1
+				 ) photos,
+				--  from productoverview.photos p group by 1,
+				 json_agg(
+					 k.id,
+					 json_build_object(
+						 'quantity', k.quantity,
+						 'size', k.size
+					 )
+				 ) skus
+				 from productoverview.photos p, productoverview.skus
+				 group by 1
+				--  where p.id = k.id
 ) p on s.id = p.styleId where s.productId = 1
+
+
+-- from productoverview.photos p group by 1
+-- inner join (
+-- 	select k.id, json_agg(
+-- 		json_build_object(
+-- 			'quantity', k.quantity,
+-- 			'size', k.size
+-- 		)
+-- 	) skus from productoverview.skus k
+-- )
+
+-- ) p on s.id = p.styleId where s.productId = 1

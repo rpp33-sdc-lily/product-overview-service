@@ -15,18 +15,53 @@ app.use(express.urlencoded({ extended: true }));
 // 	res.statusCode(200).send('request to /products received!');
 // })
 
-app.get('/products', db.getAllProducts);
+// OLD VERSION
+// app.get('/products', db.getAllProducts);
 
 app.get('/products', (req, res) => {
   // query results from database
-	db.getAllProducts();
+	db.getAllProducts.then(results => {
+		res.status(200).send(results);
+	})
+	.catch(error => {
+		res.status(500).send(error);
+	});
 	// send back error or query results
 });
 
+// OLD VERSION
+// app.get('/products/:product_id', db.getProductByID);
 
-app.get('/products/:product_id', db.getProductByID);
+app.get('/products/:product_id', (req, res) => {
+	const product_id = req.params.product_id;
+	// db.getProductByID.then(results => {
+	// 	res.status(200).send(results);
+	// })
+	// .catch(error => {
+	// 	res.status(500).send(error);
+	// });
 
-app.get('/products/:product_id/styles', db.getProductStyles);
+	db.getProductByID(product_id, (err, results) => {
+		if (err) {
+			res.status(500).send(err);
+		}
+		else (
+			res.status(200).send(results)
+		)
+	});
+});
+
+
+app.get('/products/:product_id/styles', (req, res) => {
+	const product_id = req.params.product_id;
+	console.log('product_id in styles is: ', product_id);
+	db.getProductStyles.then(results => {
+		res.status(200).send(results);
+	})
+	.catch(error => {
+		res.status(500).send(error);
+	});
+});
 
 
 
