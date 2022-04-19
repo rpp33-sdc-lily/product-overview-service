@@ -102,7 +102,21 @@ select json_build_object(
 
 			),
 			'skus', (select json_object_agg(
-					k.id, json_build_object(
+					-- k.id,
+					(
+						select
+						CASE
+						when size = 'XS' then '37'
+						when size = 'S' then '38'
+						when size = 'M' then '39'
+						when size = 'L' then '40'
+						when size = 'XL' then '41'
+						when size = 'XXL' then '42'
+						else size
+						end as SizeText
+					--  from productoverview.skus k at k.id
+					),
+					json_build_object(
 						'quantity', k.quantity,
 						'size', k.size
 					)
@@ -115,3 +129,18 @@ select json_build_object(
 from productoverview.styles s where s.productId = 1
 
 -- select count(quantity), size from productoverview.skus group by size;
+
+-- select
+-- 						CASE
+-- 						when size = 'XS' then '37'
+-- 						when size = 'S' then '38'
+-- 						when size = 'M' then '39'
+-- 						when size = 'L' then '40'
+-- 						when size = 'XL' then '41'
+-- 						when size = 'XXL' then '42'
+-- 						else size
+-- 						end as SizeText
+-- 					 from productoverview.skus k where k.styleId = productoverview.styles.id;
+
+
+-- select k.id from productoverview.skus k;
