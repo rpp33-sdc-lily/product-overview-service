@@ -23,7 +23,12 @@
 -- DELIMITER ','
 -- CSV HEADER;
 
-COPY productoverview.styles
-FROM '/Users/tanha/RPP33/SDC/csv data/styles.csv'
-DELIMITER ','
-CSV HEADER;
+-- COPY productoverview.styles
+-- FROM '/Users/tanha/RPP33/SDC/csv data/styles.csv'
+-- DELIMITER ','
+-- CSV HEADER;
+
+-- COPY productoverview.related
+-- FROM '/Users/tanha/RPP33/SDC/csv data/related.csv'
+-- DELIMITER ','
+-- CSV HEADER;

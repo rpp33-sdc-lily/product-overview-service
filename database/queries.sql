@@ -15,6 +15,8 @@
 
 -- select pg_cancel_backend(3659);
 
+-- DROP TABLE productoverview.skus;
+
 CREATE SCHEMA IF NOT EXISTS productoverview
     AUTHORIZATION postgres;
 
@@ -68,11 +70,16 @@ CREATE TABLE IF NOT EXISTS productoverview.styles (
 	default_style int
 );
 
+CREATE TABLE IF NOT EXISTS productoverview.related (
+	id SERIAL PRIMARY KEY,
+	current_product_id int,
+	related_product_id int
+);
+
 -- ALTER TABLE productoverview.styles ALTER COLUMN sale_price NULL;
 -- UPDATE productoverview.styles SET sale_price = NULL;
 
 
--- DROP TABLE productoverview.products
 
 --  SELECT * FROM productoverview.products;
 
@@ -106,6 +113,8 @@ CREATE TABLE IF NOT EXISTS productoverview.styles (
 --   where id = 11
 -- ) t
 
+
+/*************************************
 select row_to_json(t)
 from (
   select productId as product_id,
@@ -133,6 +142,7 @@ from (
   from productoverview.styles
   where productId = 1
 ) t;
+*************************************/
 
 -- select * from productoverview.styles limit 3;
 
@@ -149,3 +159,6 @@ from (
 	-- where
 	-- 	productoverview.photos.styleId = productoverview.styles.id
 	-- 	and productoverview.styles.productId = 8;
+
+
+	select * from productoverview.skus limit 100;

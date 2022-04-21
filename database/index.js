@@ -198,46 +198,106 @@ const getProductByID = (product_id, callback) => {
 }; // try product_id = 64620
 
 
-const getProductStyles = new Promise((resolve, reject) => {
+const getProductStyles = (product_id, callback) => {
 	// const product_id = req.params.product_id;
 	// console.log('product_id in styles is: ', product_id);
-	const productStyleQuery = `select row_to_json(t) ` +
-		`from ( ` +
-		`select productId as product_id, ` +
-		`(` +
-		'select array_to_json(array_agg(row_to_json(d))) ' +
-		`from (	` +
-		`select id as style_id, name, original_price, default_style as default, ( ` +
-		`select array_to_json(array_agg(row_to_json(p))) ` +
-		`from ( ` +
-		`select productoverview.photos.thumbnail_url, productoverview.photos.url ` +
-		`from productoverview.photos, productoverview.styles ` +
-		`where ` +
-		`productoverview.photos.styleId = productoverview.styles.id ` +
-		`and productoverview.styles.productId = 1 ` +
-		`) p ` +
-		`) as photos ` +
-		`from productoverview.styles ` +
-		`where productId = 1 ` +
-		`) d ` +
-		`) as results ` +
-		`from productoverview.styles ` +
-		`where productId = 1 ` +
-		`) t; `;
+
+	// const productStyleQuery = `select row_to_json(t) ` +
+	// 	`from ( ` +
+	// 	`select productId as product_id, ` +
+	// 	`(` +
+	// 	'select array_to_json(array_agg(row_to_json(d))) ' +
+	// 	`from (	` +
+	// 	`select id as style_id, name, original_price, default_style as default, ( ` +
+	// 	`select array_to_json(array_agg(row_to_json(p))) ` +
+	// 	`from ( ` +
+	// 	`select productoverview.photos.thumbnail_url, productoverview.photos.url ` +
+	// 	`from productoverview.photos, productoverview.styles ` +
+	// 	`where ` +
+	// 	`productoverview.photos.styleId = productoverview.styles.id ` +
+	// 	`and productoverview.styles.productId = 1 ` +
+	// 	`) p ` +
+	// 	`) as photos ` +
+	// 	`from productoverview.styles ` +
+	// 	`where productId = 1 ` +
+	// 	`) d ` +
+	// 	`) as results ` +
+	// 	`from productoverview.styles ` +
+	// 	`where productId = 1 ` +
+	// 	`) t; `;
+
+	const productStyleQuery = `select json_build_object(` +
+			`'product', '1', ` +
+			`	'results', json_agg( ` +
+			`json_build_object( ` +
+			`'style_id', s.id, ` +
+			`'name', s.name, ` +
+			`'original_price', s.original_price, ` +
+			`'sale_price', s.sale_price, ` +
+			`'default?', s.default_style, ` +
+			`'photos', (select (json_agg( ` +
+				`json_build_object( ` +
+					`'thumbnail_url', p.thumbnail_url, ` +
+					`'url', p.url ` +
+				`) ` +
+			`)` +
+			`) as photos from productoverview.photos p where p.styleId = s.id ` +
+			`), ` +
+			`'skus', (select json_object_agg( ` +
+					// -- k.id,
+					`(
+						select
+						CASE
+						when size = 'XS' then '37'
+						when size = 'S' then '38'
+						when size = 'M' then '39'
+						when size = 'L' then '40'
+						when size = 'XL' then '41'
+						when size = 'XXL' then '42'
+						else size
+						end as SizeText
+					--  from productoverview.skus k at k.id
+					),
+					json_build_object(
+						'quantity', k.quantity,
+						'size', k.size
+					)
+				) from productoverview.skus k where k.styleId = s.id
+			)
+
+			)
+		)
+	)
+from productoverview.styles s where s.productId = 1; `
+
 
 	client.query(productStyleQuery, (err, results) => {
 		if (err) {
 			console.log('error in cart database!', err);
-			reject(err);
+			callback(err, null);
 		}
 		else {
-			console.log('style query is working! ', results.rows);
-			resolve(results.rows);
+			console.log('style query is working! ', results);
+			callback(null, results);
 			// res.status(200).json(results.rows);
 		}
 	})
-});
+};
 
+
+const getRelatedProducts = (product_id, callback) => {
+	var getRelatedProductsQuery = `select array_agg(related_product_id) from productoverview.related where current_product_id = ${product_id}`;
+	client.query(getRelatedProductsQuery, (err, results) => {
+		if (err) {
+			console.log('error in products/related products! ', err);
+			callback(err, null);
+		}
+		else {
+			console.log('products/related products is working! ');
+			callback(null, results);
+		}
+	});
+};
 
 
 // client.query('Select * from productoverview.features', (err, res) => {
@@ -287,7 +347,8 @@ const getProductStyles = new Promise((resolve, reject) => {
 module.exports = {
 	getAllProducts: getAllProducts,
 	getProductByID: getProductByID,
-	getProductStyles: getProductStyles
+	getProductStyles: getProductStyles,
+	getRelatedProducts: getRelatedProducts
 }
 
 // curl http://localhost:5000/products

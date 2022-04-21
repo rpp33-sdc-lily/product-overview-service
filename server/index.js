@@ -55,13 +55,34 @@ app.get('/products/:product_id', (req, res) => {
 app.get('/products/:product_id/styles', (req, res) => {
 	const product_id = req.params.product_id;
 	console.log('product_id in styles is: ', product_id);
-	db.getProductStyles.then(results => {
-		res.status(200).send(results);
-	})
-	.catch(error => {
-		res.status(500).send(error);
+	db.getProductStyles(product_id, (err, results) => {
+		if (err) {
+			console.log('error in server product styles! ', err);
+			res.status(500).send(err);
+		}
+		else {
+			console.log('server product styles success! ', results.rows[0].json_build_object);
+			res.status(500).send(results.rows[0].json_build_object);
+		}
 	});
 });
+
+
+app.get('/products/:product_id/related', (req, res) => {
+	const product_id = req.params.product_id;
+	console.log('product_id in products/related products is: ', product_id);
+	db.getRelatedProducts(product_id, (err, results) => {
+		if (err) {
+			console.log('error in server products/related products! ', err);
+			res.status(500).send(err);
+		}
+		else {
+			console.log('server products/related products success! ', results.rows[0].array_agg);
+			res.status(500).send(results.rows[0].array_agg);
+		}
+	});
+});
+
 
 
 

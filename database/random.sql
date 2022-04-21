@@ -126,7 +126,7 @@ select json_build_object(
 			)
 		)
 	)
-from productoverview.styles s where s.productId = 1
+from productoverview.styles s where s.productId = 1;
 
 -- select count(quantity), size from productoverview.skus group by size;
 
@@ -144,3 +144,10 @@ from productoverview.styles s where s.productId = 1
 
 
 -- select k.id from productoverview.skus k;
+
+-- select json_build_array(select r.related_product_id from productoverview.related r) from productoverview.related r;
+
+
+-- select array_agg(related_product_id) from productoverview.related where current_product_id = 1;
+
+
