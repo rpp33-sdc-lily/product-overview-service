@@ -156,13 +156,13 @@ const dummyData = [
 
 // remake getAllProducts here!!!!
 const getAllProducts = new Promise((resolve, reject) => {
-	client.query('Select * from productoverview.products limit 3', (err, results) => {
+	client.query('Select * from productoverview.products', (err, results) => {
 		if (err) {
 			console.log('error in products database!', err);
 			reject(err);
 		}
 		else {
-			console.log('products database is working! ', results.rows);
+			// console.log('products database is working! ', results.rows);
 			resolve(results.rows);
 		}
 	})
@@ -225,16 +225,31 @@ const getProductStyles = (product_id, callback) => {
 	// 	`from productoverview.styles ` +
 	// 	`where productId = 1 ` +
 	// 	`) t; `;
+	var product_id_string = JSON.stringify(product_id);
 
 	const productStyleQuery = `select json_build_object(` +
-			`'product', '1', ` +
-			`	'results', json_agg( ` +
+			`'product', ${product_id}::text, ` +
+			`'results', json_agg( ` +
 			`json_build_object( ` +
 			`'style_id', s.id, ` +
 			`'name', s.name, ` +
-			`'original_price', s.original_price, ` +
-			`'sale_price', s.sale_price, ` +
-			`'default?', s.default_style, ` +
+			`'original_price', (
+				select
+				CASE
+				when s.original_price = 'null' then '0'
+				else s.original_price
+				end as OriginalPrice
+			), ` +
+			`'sale_price', (
+				select
+				CASE
+				when s.sale_price = 'null' then '0'
+				else s.sale_price
+				end as SalePrice
+			), ` +
+			`'default?', (
+				select (1::smallint)::int::bool
+			), ` +
 			`'photos', (select (json_agg( ` +
 				`json_build_object( ` +
 					`'thumbnail_url', p.thumbnail_url, ` +
@@ -268,7 +283,7 @@ const getProductStyles = (product_id, callback) => {
 			)
 		)
 	)
-from productoverview.styles s where s.productId = 1; `
+from productoverview.styles s where s.productId = ${product_id}; `
 
 
 	client.query(productStyleQuery, (err, results) => {
@@ -277,9 +292,9 @@ from productoverview.styles s where s.productId = 1; `
 			callback(err, null);
 		}
 		else {
-			console.log('style query is working! ', results);
-			callback(null, results);
-			// res.status(200).json(results.rows);
+			console.log('style query is working! ', results.rows[0].json_build_object);
+			// callback(null, results);
+			callback(null, results.rows[0].json_build_object);
 		}
 	})
 };

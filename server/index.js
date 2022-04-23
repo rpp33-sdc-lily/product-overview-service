@@ -19,9 +19,22 @@ app.use(express.urlencoded({ extended: true }));
 // app.get('/products', db.getAllProducts);
 
 app.get('/products', (req, res) => {
+	var page = 1;  // Default 1
+	var count = 5; // Default 5
+	console.log('page is: ', req.body);
+	console.log('count is: ', req.body);
+
+	var start = count * (page - 1);
+	var end = start + count;
+	// if (req.body.page != undefined) {
+	// 	page = req.body.page;
+	// }
+	// if (req.body.count != undefined) {
+	// 	count = req.body.count;
+	// }
   // query results from database
 	db.getAllProducts.then(results => {
-		res.status(200).send(results);
+		res.status(200).send(results.slice(start, end));
 	})
 	.catch(error => {
 		res.status(500).send(error);
@@ -41,13 +54,14 @@ app.get('/products/:product_id', (req, res) => {
 	// 	res.status(500).send(error);
 	// });
 
+	console.log('getProduct is coming here!');
 	db.getProductByID(product_id, (err, results) => {
 		if (err) {
 			res.status(500).send(err);
 		}
-		else (
-			res.status(200).send(results)
-		)
+		else {
+			res.status(200).send(results);
+		}
 	});
 });
 
@@ -61,8 +75,9 @@ app.get('/products/:product_id/styles', (req, res) => {
 			res.status(500).send(err);
 		}
 		else {
-			console.log('server product styles success! ', results.rows[0].json_build_object);
-			res.status(500).send(results.rows[0].json_build_object);
+			// console.log('server product styles success! ', results.rows[0].json_build_object);
+			// res.status(200).send(results.rows[0].json_build_object);
+			res.status(200).send(results);
 		}
 	});
 });
@@ -78,7 +93,7 @@ app.get('/products/:product_id/related', (req, res) => {
 		}
 		else {
 			console.log('server products/related products success! ', results.rows[0].array_agg);
-			res.status(500).send(results.rows[0].array_agg);
+			res.status(200).send(results.rows[0].array_agg);
 		}
 	});
 });

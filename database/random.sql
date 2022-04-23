@@ -84,7 +84,7 @@
 
 
 select json_build_object(
-	'product', '1',
+	'product', '3',
 	'results', json_agg(
 		json_build_object(
 			'style_id', s.id,
@@ -126,7 +126,7 @@ select json_build_object(
 			)
 		)
 	)
-from productoverview.styles s where s.productId = 1;
+from productoverview.styles s where s.productId = 3;
 
 -- select count(quantity), size from productoverview.skus group by size;
 
