@@ -77,6 +77,9 @@ app.get('/products/:product_id/styles', (req, res) => {
 		else {
 			// console.log('server product styles success! ', results.rows[0].json_build_object);
 			// res.status(200).send(results.rows[0].json_build_object);
+			if (results.results === null || results.results === undefined) {
+				results.results = [];
+			}
 			res.status(200).send(results);
 		}
 	});

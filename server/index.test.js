@@ -15,3 +15,6 @@ it ('Gets the test endpoint', async () => {
 	expect(res.body.message).toBe('testing endpoint passed!')
 	// done()
 })
+
+
+// 2 unit tests (endpoint tests?) for 
