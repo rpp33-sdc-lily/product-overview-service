@@ -1,0 +1,1 @@
+CREATE INDEX product_id_index on productoverview.features (product_id);
