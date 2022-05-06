@@ -3,7 +3,7 @@ const {Pool} = require('pg')
 
 const client = new Pool({
 	user: "postgres",
-	host: "50.16.175.55",
+	host: "3.218.50.19",
 	database: "postgres",
 	password: "password",
 	port: 5432
@@ -27,7 +27,7 @@ const getAllProducts = new Promise((resolve, reject) => {
 			// console.log('products database is working! ', results.rows);
 			resolve(results.rows);
 		}
-	})
+	})`	`
 });
 
 
