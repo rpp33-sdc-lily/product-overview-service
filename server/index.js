@@ -18,6 +18,10 @@ app.use(express.urlencoded({ extended: true }));
 // OLD VERSION
 // app.get('/products', db.getAllProducts);
 
+app.get('/loaderio-a37d227c3a70e4064ac68c1ebc105f6f.txt', (req, res) => {
+		res.sendFile('/home/ubuntu/loaderio-a37d227c3a70e4064ac68c1ebc105f6f.txt');
+});
+
 app.get('/products', (req, res) => {
 	var page = 1;  // Default 1
 	var count = 5; // Default 5
