@@ -12,6 +12,7 @@
     "test": "jest",
     "test:watch": "jest  --watch",
     "start": "npx nodemon server/start.js",
-    "database": "node database/index.js"
+    "database": "node database/index.js",
+    "new-relic": "node -r newrelic your-program.js"
   }
 }

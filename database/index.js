@@ -21,7 +21,7 @@ client.connect();
 const getAllProducts = new Promise((resolve, reject) => {
 	client.query('Select * from productoverview.products', (err, results) => {
 		if (err) {
-			console.log('error in products database!', err);
+			// console.log('error in products database!', err);
 			reject(err);
 		}
 		else {
@@ -45,12 +45,12 @@ const getProductByID = (product_id, callback) => {
 
 	client.query(getProductByIDQuery, (err, results) => {
 		if (err) {
-			console.log('error in database!', err);
+			// console.log('error in database!', err);
 			callback(err, null);
 		}
 		else {
 			// console.log('database is working! ', results.rows[0].row_to_json);
-			console.log('database is working! ', results.rows[0].row_to_json);
+			// console.log('database is working! ', results.rows[0].row_to_json);
 			callback(null, results.rows[0].row_to_json);
 			// res.status(200).json(results.rows[0].row_to_json);
 		}
@@ -123,11 +123,11 @@ from productoverview.styles s where s.productId = ${product_id}; `
 
 	client.query(productStyleQuery, (err, results) => {
 		if (err) {
-			console.log('error in cart database!', err);
+			// console.log('error in cart database!', err);
 			callback(err, null);
 		}
 		else {
-			console.log('style query is working! ', results.rows[0].json_build_object);
+			// console.log('style query is working! ', results.rows[0].json_build_object);
 			// callback(null, results);
 			callback(null, results.rows[0].json_build_object);
 		}
@@ -139,11 +139,11 @@ const getRelatedProducts = (product_id, callback) => {
 	var getRelatedProductsQuery = `select array_agg(related_product_id) from productoverview.related where current_product_id = ${product_id}`;
 	client.query(getRelatedProductsQuery, (err, results) => {
 		if (err) {
-			console.log('error in products/related products! ', err);
+			// console.log('error in products/related products! ', err);
 			callback(err, null);
 		}
 		else {
-			console.log('products/related products is working! ');
+			// console.log('products/related products is working! ');
 			callback(null, results);
 		}
 	});
