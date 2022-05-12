@@ -1,4 +1,5 @@
 // this is my server
+const newrelic = require('newrelic');
 const express = require('express');
 const app = express();
 const db = require('../database/index.js');
