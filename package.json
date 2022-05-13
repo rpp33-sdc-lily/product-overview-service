@@ -1,8 +1,10 @@
 {
   "dependencies": {
     "body-parser": "^1.20.0",
+    "dotenv": "^16.0.1",
     "express": "^4.17.3",
-    "pg": "^8.7.3"
+    "pg": "^8.7.3",
+    "redis": "^4.1.0"
   },
   "devDependencies": {
     "jest": "^27.5.1",
@@ -12,7 +14,6 @@
     "test": "jest",
     "test:watch": "jest  --watch",
     "start": "npx nodemon server/start.js",
-    "database": "node database/index.js",
-    "new-relic": "node -r newrelic server/start.js"
+    "database": "node database/index.js"
   }
 }

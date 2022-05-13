@@ -1,5 +1,14 @@
 // this is my server
-const newrelic = require('newrelic');
+// const newrelic = require('newrelic');
+require('dotenv').config();
+
+const redis = require('redis');
+
+const PORT = process.env.PORT || 5000;
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
+
+const client = redis.createClient(REDIS_PORT);
+
 const express = require('express');
 const app = express();
 const db = require('../database/index.js');
@@ -9,6 +18,26 @@ const db = require('../database/index.js');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // console.dir(req.params.name);
+
+//**** REDIS
+
+// import { createClient } from 'redis';
+// const redis = require('redis');
+
+// const client = redis.createClient();
+
+// const client = redis.createClient(5000, 'localhost');
+  // (port, host)
+
+
+// client.on('error', (err) => console.log('Redis Client Error', err));
+
+//  client.connect();
+
+//  client.set('key', 'value');
+// const value =  client.get('key');
+
+//**** End of REDIS
 
 
 
@@ -65,10 +94,33 @@ app.get('/products/:product_id', (req, res) => {
 			res.status(500).send(err);
 		}
 		else {
+			const dataRedis = results;
+			// Set to Redis
+			client.setex(product_id, 3600, dataRedis);
 			res.status(200).send(results);
 		}
 	});
 });
+
+	// Cacher middleware
+function cache(req, res, next) {
+	const product_id = req.params.product_id;
+
+	client.get(product_id, (err, data) => {
+		if (err) {
+			throw err;
+		}
+		if (data !== null) {
+			res.send(data);
+		}
+		else {
+			next();
+		}
+	})
+}
+
+app.get('/products/:product_id', cache, db.getProductByID);
+
 
 
 app.get('/products/:product_id/styles', (req, res) => {
