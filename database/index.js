@@ -161,3 +161,5 @@ module.exports = {
 }
 
 // curl http://localhost:5000/products
+
+// trying Redis
