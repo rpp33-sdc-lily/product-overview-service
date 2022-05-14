@@ -48,8 +48,8 @@ app.use(express.urlencoded({ extended: true }));
 // OLD VERSION
 // app.get('/products', db.getAllProducts);
 
-app.get('/loaderio-93f4ea6f7270a6dcd0a431c3346d4362.txt', (req, res) => {
-		res.sendFile('/home/ubuntu/product-overview-service/loaderio-93f4ea6f7270a6dcd0a431c3346d4362.txt');
+app.get('/loaderio-465b0c072473c71cc884d3feefca6b76.txt', (req, res) => {
+		res.sendFile('/home/ubuntu/product-overview-service/loaderio-465b0c072473c71cc884d3feefca6b76.txt');
 });
 
 app.get('/products', (req, res) => {
