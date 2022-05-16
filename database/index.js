@@ -1,9 +1,8 @@
 
-const {Pool} = require('pg')
+const {Pool} = require('pg');
 
 const client = new Pool({
 	user: "postgres",
-	// host: "3.218.50.19",
 	host: "184.72.146.158",
 	database: "postgres",
 	password: "password",
@@ -18,18 +17,18 @@ client.connect();
 // TODO: implement page and count parameters
 
 // remake getAllProducts here!!!!
-const getAllProducts = new Promise((resolve, reject) => {
-	client.query('Select * from productoverview.products', (err, results) => {
-		if (err) {
-			// console.log('error in products database!', err);
-			reject(err);
-		}
-		else {
-			// console.log('products database is working! ', results.rows);
-			resolve(results.rows);
-		}
-	})
-});
+// const getAllProducts = new Promise((resolve, reject) => {
+// 	client.query('Select * from productoverview.products', (err, results) => {
+// 		if (err) {
+// 			console.log('error in products database!', err);
+// 			reject(err);
+// 		}
+// 		else {
+// 			console.log('products database is working! ', results.rows);
+// 			resolve(results.rows);
+// 		}
+// 	});
+// });
 
 
 
@@ -45,12 +44,12 @@ const getProductByID = (product_id, callback) => {
 
 	client.query(getProductByIDQuery, (err, results) => {
 		if (err) {
-			// console.log('error in database!', err);
+			console.log('error in database!', err);
 			callback(err, null);
 		}
 		else {
 			// console.log('database is working! ', results.rows[0].row_to_json);
-			// console.log('database is working! ', results.rows[0].row_to_json);
+			console.log('database is working! ', results.rows[0].row_to_json);
 			callback(null, results.rows[0].row_to_json);
 			// res.status(200).json(results.rows[0].row_to_json);
 		}
@@ -123,11 +122,11 @@ from productoverview.styles s where s.productId = ${product_id}; `
 
 	client.query(productStyleQuery, (err, results) => {
 		if (err) {
-			// console.log('error in cart database!', err);
+			console.log('error in cart database!', err);
 			callback(err, null);
 		}
 		else {
-			// console.log('style query is working! ', results.rows[0].json_build_object);
+			console.log('style query is working! ', results.rows[0].json_build_object);
 			// callback(null, results);
 			callback(null, results.rows[0].json_build_object);
 		}
@@ -154,7 +153,7 @@ const getRelatedProducts = (product_id, callback) => {
 // VALUES ("Camo Onesie", "Blend in to your crowd", "The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.", "Jackets", 0);
 
 module.exports = {
-	getAllProducts: getAllProducts,
+	// getAllProducts: getAllProducts,
 	getProductByID: getProductByID,
 	getProductStyles: getProductStyles,
 	getRelatedProducts: getRelatedProducts

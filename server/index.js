@@ -2,12 +2,14 @@
 // const newrelic = require('newrelic');
 require('dotenv').config();
 
-const redis = require('redis');
+const Redis = require('redis');
 
-const PORT = process.env.PORT || 5000;
-const REDIS_PORT = process.env.REDIS_PORT || 6379;
+// const PORT = process.env.PORT || 5000;
+// const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
-const client = redis.createClient(REDIS_PORT);
+// const client = Redis.createClient(REDIS_PORT);
+const redisClient = Redis.createClient();
+
 
 const express = require('express');
 const app = express();
@@ -103,23 +105,23 @@ app.get('/products/:product_id', (req, res) => {
 });
 
 	// Cacher middleware
-function cache(req, res, next) {
-	const product_id = req.params.product_id;
+// function cache(req, res, next) {
+// 	const product_id = req.params.product_id;
 
-	client.get(product_id, (err, data) => {
-		if (err) {
-			throw err;
-		}
-		if (data !== null) {
-			res.send(data);
-		}
-		else {
-			next();
-		}
-	})
-}
+// 	client.get(product_id, (err, data) => {
+// 		if (err) {
+// 			throw err;
+// 		}
+// 		if (data !== null) {
+// 			res.send(data);
+// 		}
+// 		else {
+// 			next();
+// 		}
+// 	})
+// }
 
-app.get('/products/:product_id', cache, db.getProductByID);
+// app.get('/products/:product_id', cache, db.getProductByID);
 
 
 
