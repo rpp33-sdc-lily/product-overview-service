@@ -18,6 +18,11 @@ app.use(express.urlencoded({ extended: true }));
 // OLD VERSION
 // app.get('/products', db.getAllProducts);
 
+app.get('/loaderio-07a1310218300c2fc487392e6596ba3b.txt', (req, res) => {
+	// res.sendFile('/home/ubuntu/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
+	res.sendFile('/Users/tanha/RPP33/SDC/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
+});
+
 app.get('/products', (req, res) => {
 	var page = 1;  // Default 1
 	var count = 5; // Default 5
