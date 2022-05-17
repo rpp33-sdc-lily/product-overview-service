@@ -1,14 +1,21 @@
 // this is my server
 const express = require('express');
 const app = express();
+// const cors = require("cors");
 const db = require('../database/index.js');
+const Redis = require('redis');
+const redisClient = Redis.createClient();
+
+const DEFAULT_EXPIRATION = 3600;
+
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
 // var bodyParser = require('body-parser');
+// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // console.dir(req.params.name);
-
+redisClient.connect();
 
 
 // app.get('/products', (req, res) => {
@@ -59,12 +66,16 @@ app.get('/products/:product_id', (req, res) => {
 	// 	res.status(500).send(error);
 	// });
 
+
 	console.log('getProduct is coming here!');
 	db.getProductByID(product_id, (err, results) => {
 		if (err) {
 			res.status(500).send(err);
+			console.log('getProductByID error: ', err);
 		}
 		else {
+			// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+			redisClient.SETEX(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results))
 			res.status(200).send(results);
 		}
 	});
