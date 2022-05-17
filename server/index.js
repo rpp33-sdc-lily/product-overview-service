@@ -8,11 +8,12 @@ const Redis = require('redis');
 // const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
 // const client = Redis.createClient(REDIS_PORT);
-const redisClient = Redis.createClient({
-	host: '127.0.0.1',
-	port: 6379,
-});
+// const redisClient = Redis.createClient({
+// 	host: '127.0.0.1',
+// 	port: 6379,
+// });
 
+const redisClient = Redis.createClient();
 
 const express = require('express');
 const app = express();
@@ -78,44 +79,87 @@ app.get('/products/:product_id', (req, res) => {
 	// .catch(error => {
 	// 	res.status(500).send(error);
 	// });
-	console.log('product_id is: ', product_id);
-	redisClient.set('test', 'val', function (err) {
-		console.log('inside redisClinet test val')
-		if (err) {
-			console.error('error');
-		} else {
+
+		const cachePromise = new Promise((resolve, reject) => {
 			redisClient.get(`products/${product_id}`, (error, cache) => {
-				console.log('inside redisClient');
 				if (error) {
-					console.error(error);
+					reject(error);
 				}
-				if (cache != null) {
-					console.log('Cache Hit!');
-					res.status(200).send(JSON.parse(cache));
-				} else {
-					console.log('Cache Miss!');
-					console.log('getProductByID is coming here!');
-					db.getProductByID(product_id, (err, results) => {
-						if (err) {
-							console.log('getProductByID error: ', err);
-							res.status(500).send(err);
-						}
-						else {
-							// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
-							redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
-							res.status(200).send(results);
-						}
-						console.log('inside db.');
-					});
-					console.log('inside big else statement');
-				};
-				console.log('inside redisClient.get');
+				else {
+					resolve(cache);
+				}
 			});
-			console.log('end of function');
-		}
+		});
+
+		cachePromise.then(cache => {
+			if (cache != null) {
+				console.log('Cache Hit');
+				res.status(200).send(JSON.parse(cache));
+			}
+			else {
+				console.log('Cache Miss!');
+					console.log('getProductByID is coming here!');
+					const getProductByIDPromise = new Promise((resolve, reject) => {
+						db.getProductByID(product_id, (err, results) => {
+							if (err) {
+								// console.log('getProductByID error: ', err);
+								// res.status(500).send(err);
+								reject(err);
+							}
+							else {
+								// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+								// redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+								// res.status(200).send(results);
+								resolve(results);
+							}
+							console.log('inside db.');
+						});
+						console.log('inside big else statement');
+					});
+					getProductByIDPromise.then(results => {
+				  	redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+						res.status(200).send(results);
+					})
+					.catch(err => {
+						console.log('getProductByIDPromise error: ', err);
+					});
+			};
+		})
+		.catch(error => {
+			console.log('cache promise error: ', error);
+		});
+
 	});
 
-});
+		// redisClient.get(`products/${product_id}`, (error, cache) => {
+		// 		console.log('inside redisClient');
+		// 		if (error) {
+		// 			console.error(error);
+		// 		}
+		// 		if (cache != null) {
+		// 			console.log('Cache Hit!');
+		// 			res.status(200).send(JSON.parse(cache));
+		// 		} else {
+		// 			console.log('Cache Miss!');
+		// 			console.log('getProductByID is coming here!');
+		// 			db.getProductByID(product_id, (err, results) => {
+		// 				if (err) {
+		// 					console.log('getProductByID error: ', err);
+		// 					res.status(500).send(err);
+		// 				}
+		// 				else {
+		// 					// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+		// 					redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+		// 					res.status(200).send(results);
+		// 				}
+		// 				console.log('inside db.');
+		// 			});
+		// 			console.log('inside big else statement');
+		// 		};
+		// 		console.log('inside redisClient.get');
+		// 	});
+		// 	console.log('end of function');
+
 
 // Cacher middleware
 // function cache(req, res, next) {
