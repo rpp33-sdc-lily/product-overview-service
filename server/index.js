@@ -8,15 +8,16 @@ const Redis = require('redis');
 // const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
 // const client = Redis.createClient(REDIS_PORT);
-const redisClient = Redis.createClient();
+const redisClient = Redis.createClient({
+	host: '127.0.0.1',
+	port: 6379,
+});
 
 
 const express = require('express');
 const app = express();
 // const cors = require("cors");
 const db = require('../database/index.js');
-const Redis = require('redis');
-const redisClient = Redis.createClient();
 
 const DEFAULT_EXPIRATION = 3600;
 
@@ -56,13 +57,13 @@ app.get('/products', (req, res) => {
 	// if (req.body.count != undefined) {
 	// 	count = req.body.count;
 	// }
-  // query results from database
+	// query results from database
 	db.getAllProducts.then(results => {
 		res.status(200).send(results.slice(start, end));
 	})
-	.catch(error => {
-		res.status(500).send(error);
-	});
+		.catch(error => {
+			res.status(500).send(error);
+		});
 	// send back error or query results
 });
 
@@ -77,23 +78,46 @@ app.get('/products/:product_id', (req, res) => {
 	// .catch(error => {
 	// 	res.status(500).send(error);
 	// });
-
-
-	console.log('getProduct is coming here!');
-	db.getProductByID(product_id, (err, results) => {
+	console.log('product_id is: ', product_id);
+	redisClient.set('test', 'val', function (err) {
+		console.log('inside redisClinet test val')
 		if (err) {
-			res.status(500).send(err);
-			console.log('getProductByID error: ', err);
-		}
-		else {
-			// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
-			redisClient.SETEX(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results))
-			res.status(200).send(results);
+			console.error('error');
+		} else {
+			redisClient.get(`products/${product_id}`, (error, cache) => {
+				console.log('inside redisClient');
+				if (error) {
+					console.error(error);
+				}
+				if (cache != null) {
+					console.log('Cache Hit!');
+					res.status(200).send(JSON.parse(cache));
+				} else {
+					console.log('Cache Miss!');
+					console.log('getProductByID is coming here!');
+					db.getProductByID(product_id, (err, results) => {
+						if (err) {
+							console.log('getProductByID error: ', err);
+							res.status(500).send(err);
+						}
+						else {
+							// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+							redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+							res.status(200).send(results);
+						}
+						console.log('inside db.');
+					});
+					console.log('inside big else statement');
+				};
+				console.log('inside redisClient.get');
+			});
+			console.log('end of function');
 		}
 	});
+
 });
 
-	// Cacher middleware
+// Cacher middleware
 // function cache(req, res, next) {
 // 	const product_id = req.params.product_id;
 
@@ -173,7 +197,7 @@ app.get('/products/:product_id/related', (req, res) => {
 // endpoint for testing jest endpoint async testing:
 app.get('/test', async (req, res) => {
 	// res.statusCode(200);
-	res.json({message: 'testing endpoint passed!'})
+	res.json({ message: 'testing endpoint passed!' })
 })
 
 module.exports = app;
