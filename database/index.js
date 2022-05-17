@@ -17,18 +17,18 @@ client.connect();
 // TODO: implement page and count parameters
 
 // remake getAllProducts here!!!!
-// const getAllProducts = new Promise((resolve, reject) => {
-// 	client.query('Select * from productoverview.products', (err, results) => {
-// 		if (err) {
-// 			console.log('error in products database!', err);
-// 			reject(err);
-// 		}
-// 		else {
-// 			console.log('products database is working! ', results.rows);
-// 			resolve(results.rows);
-// 		}
-// 	});
-// });
+const getAllProducts = new Promise((resolve, reject) => {
+	client.query('Select * from productoverview.products', (err, results) => {
+		if (err) {
+			console.log('error in products database!', err);
+			reject(err);
+		}
+		else {
+			// console.log('products database is working! ', results.rows);
+			resolve(results.rows);
+		}
+	});
+});
 
 
 
