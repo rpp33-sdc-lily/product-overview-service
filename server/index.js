@@ -2,33 +2,43 @@
 // const newrelic = require('newrelic');
 require('dotenv').config();
 
-const Redis = require('redis');
+const redis = require('redis');
 
-// const PORT = process.env.PORT || 5000;
-// const REDIS_PORT = process.env.REDIS_PORT || 6379;
+const PORT = process.env.PORT || 5000;
+const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
-// const client = Redis.createClient(REDIS_PORT);
-const redisClient = Redis.createClient({
-	host: '127.0.0.1',
-	port: 6379,
-});
-
+const client = redis.createClient(REDIS_PORT);
 
 const express = require('express');
 const app = express();
-// const cors = require("cors");
 const db = require('../database/index.js');
-
-const DEFAULT_EXPIRATION = 3600;
-
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
 // var bodyParser = require('body-parser');
-// app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // console.dir(req.params.name);
-redisClient.connect();
+
+//**** REDIS
+
+// import { createClient } from 'redis';
+// const redis = require('redis');
+
+// const client = redis.createClient();
+
+// const client = redis.createClient(5000, 'localhost');
+  // (port, host)
+
+
+// client.on('error', (err) => console.log('Redis Client Error', err));
+
+//  client.connect();
+
+//  client.set('key', 'value');
+// const value =  client.get('key');
+
+//**** End of REDIS
+
 
 
 // app.get('/products', (req, res) => {
@@ -38,9 +48,8 @@ redisClient.connect();
 // OLD VERSION
 // app.get('/products', db.getAllProducts);
 
-app.get('/loaderio-07a1310218300c2fc487392e6596ba3b.txt', (req, res) => {
-	// res.sendFile('/home/ubuntu/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
-	res.sendFile('/Users/tanha/RPP33/SDC/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
+app.get('/loaderio-a37d227c3a70e4064ac68c1ebc105f6f.txt', (req, res) => {
+		res.sendFile('/home/ubuntu/loaderio-a37d227c3a70e4064ac68c1ebc105f6f.txt');
 });
 
 app.get('/products', (req, res) => {
@@ -57,13 +66,13 @@ app.get('/products', (req, res) => {
 	// if (req.body.count != undefined) {
 	// 	count = req.body.count;
 	// }
-	// query results from database
+  // query results from database
 	db.getAllProducts.then(results => {
 		res.status(200).send(results.slice(start, end));
 	})
-		.catch(error => {
-			res.status(500).send(error);
-		});
+	.catch(error => {
+		res.status(500).send(error);
+	});
 	// send back error or query results
 });
 
@@ -78,63 +87,39 @@ app.get('/products/:product_id', (req, res) => {
 	// .catch(error => {
 	// 	res.status(500).send(error);
 	// });
-	console.log('product_id is: ', product_id);
-	redisClient.set('test', 'val', function (err) {
-		console.log('inside redisClinet test val')
+
+	console.log('getProduct is coming here!');
+	db.getProductByID(product_id, (err, results) => {
 		if (err) {
-			console.error('error');
-		} else {
-			redisClient.get(`products/${product_id}`, (error, cache) => {
-				console.log('inside redisClient');
-				if (error) {
-					console.error(error);
-				}
-				if (cache != null) {
-					console.log('Cache Hit!');
-					res.status(200).send(JSON.parse(cache));
-				} else {
-					console.log('Cache Miss!');
-					console.log('getProductByID is coming here!');
-					db.getProductByID(product_id, (err, results) => {
-						if (err) {
-							console.log('getProductByID error: ', err);
-							res.status(500).send(err);
-						}
-						else {
-							// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
-							redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
-							res.status(200).send(results);
-						}
-						console.log('inside db.');
-					});
-					console.log('inside big else statement');
-				};
-				console.log('inside redisClient.get');
-			});
-			console.log('end of function');
+			res.status(500).send(err);
+		}
+		else {
+			const dataRedis = results;
+			// Set to Redis
+			client.setex(product_id, 3600, dataRedis);
+			res.status(200).send(results);
 		}
 	});
-
 });
 
-// Cacher middleware
-// function cache(req, res, next) {
-// 	const product_id = req.params.product_id;
+	// Cacher middleware
+function cache(req, res, next) {
+	const product_id = req.params.product_id;
 
-// 	client.get(product_id, (err, data) => {
-// 		if (err) {
-// 			throw err;
-// 		}
-// 		if (data !== null) {
-// 			res.send(data);
-// 		}
-// 		else {
-// 			next();
-// 		}
-// 	})
-// }
+	client.get(product_id, (err, data) => {
+		if (err) {
+			throw err;
+		}
+		if (data !== null) {
+			res.send(data);
+		}
+		else {
+			next();
+		}
+	})
+}
 
-// app.get('/products/:product_id', cache, db.getProductByID);
+app.get('/products/:product_id', cache, db.getProductByID);
 
 
 
@@ -197,7 +182,7 @@ app.get('/products/:product_id/related', (req, res) => {
 // endpoint for testing jest endpoint async testing:
 app.get('/test', async (req, res) => {
 	// res.statusCode(200);
-	res.json({ message: 'testing endpoint passed!' })
+	res.json({message: 'testing endpoint passed!'})
 })
 
 module.exports = app;
