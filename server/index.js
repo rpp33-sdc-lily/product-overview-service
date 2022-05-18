@@ -18,11 +18,11 @@ const app = express();
 // const cors = require("cors");
 const db = require('../database/index.js');
 
-const DEFAULT_EXPIRATION = 180;
+const DEFAULT_EXPIRATION = 3600;
 
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
-var bodyParser = require('body-parser');
+// var bodyParser = require('body-parser');
 // app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -153,7 +153,7 @@ const getRelatedProducts = (product_id, callback) => {
 // VALUES ("Camo Onesie", "Blend in to your crowd", "The So Fatigues will wake you up and fit you in. This high energy camo will have you blending in to even the wildest surroundings.", "Jackets", 0);
 
 module.exports = {
-	// getAllProducts: getAllProducts,
+	getAllProducts: getAllProducts,
 	getProductByID: getProductByID,
 	getProductStyles: getProductStyles,
 	getRelatedProducts: getRelatedProducts
