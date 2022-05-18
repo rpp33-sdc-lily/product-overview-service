@@ -27,8 +27,8 @@ const DEFAULT_EXPIRATION = 3600;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/loaderio-74bf4c7e4daf1b926c212aaca024541a.txt', (req, res) => {
-	res.sendFile('/home/ubuntu/product-overview-service/loaderio-74bf4c7e4daf1b926c212aaca024541a.txt');
+app.get('/loaderio-bdbab10087232cc8cf956aa101fd7095.txt', (req, res) => {
+	res.sendFile('/home/ubuntu/product-overview-service/loaderio-bdbab10087232cc8cf956aa101fd7095.txt');
 	// res.sendFile('/Users/tanha/RPP33/SDC/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
 });
 
