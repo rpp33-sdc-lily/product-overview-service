@@ -22,7 +22,7 @@ const DEFAULT_EXPIRATION = 180;
 
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
-// var bodyParser = require('body-parser');
+var bodyParser = require('body-parser');
 // app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -88,23 +88,33 @@ app.get('/products/:product_id', async (req, res) => {
 	}
 });
 
-app.get('/products/:product_id/styles', (req, res) => {
+app.get('/products/:product_id/styles', async (req, res) => {
 	const product_id = req.params.product_id;
 	console.log('product_id in styles is: ', product_id);
-	db.getProductStyles(product_id, (err, results) => {
-		if (err) {
-			console.log('error in server product styles! ', err);
-			res.status(500).send(err);
-		}
-		else {
-			// console.log('server product styles success! ', results.rows[0].json_build_object);
-			// res.status(200).send(results.rows[0].json_build_object);
-			if (results.results === null || results.results === undefined) {
-				results.results = [];
+	var key = `/products/${product_id}/styles`;
+	const value = await redisClient.get(key);
+	if (value != null) {
+		// console.log('value is: ', value);
+		res.status(200).send(value);
+	}
+	else {
+		db.getProductStyles(product_id, (err, results) => {
+			if (err) {
+				console.log('error in server product styles! ', err);
+				res.status(500).send(err);
 			}
-			res.status(200).send(results);
-		}
-	});
+			else {
+				// console.log('server product styles success! ', results.rows[0].json_build_object);
+				// res.status(200).send(results.rows[0].json_build_object);
+				if (results.results === null || results.results === undefined) {
+					results.results = [];
+				}
+				console.log('product_id/styles results are: ', results);
+				redisClient.SETEX(key, DEFAULT_EXPIRATION, JSON.stringify(results));
+				res.status(200).send(results);
+			}
+		});
+	}
 });
 
 
