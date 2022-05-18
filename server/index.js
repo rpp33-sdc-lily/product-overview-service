@@ -27,8 +27,8 @@ var bodyParser = require('body-parser');
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/loaderio-73fbcd7d8394cd6d0b5d3d2332504805.txt', (req, res) => {
-	res.sendFile('/home/ubuntu/product-overview-service/loaderio-73fbcd7d8394cd6d0b5d3d2332504805.txt');
+app.get('/loaderio-74bf4c7e4daf1b926c212aaca024541a.txt', (req, res) => {
+	res.sendFile('/home/ubuntu/product-overview-service/loaderio-74bf4c7e4daf1b926c212aaca024541a.txt');
 	// res.sendFile('/Users/tanha/RPP33/SDC/product-overview-service/loaderio-07a1310218300c2fc487392e6596ba3b.txt');
 });
 
