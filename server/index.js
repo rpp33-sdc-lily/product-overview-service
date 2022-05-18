@@ -1,26 +1,27 @@
 // this is my server
 // const newrelic = require('newrelic');
 require('dotenv').config();
-
+const { promisify } = require('util');
 const Redis = require('redis');
-
 // const PORT = process.env.PORT || 5000;
 // const REDIS_PORT = process.env.REDIS_PORT || 6379;
 
-// const client = Redis.createClient(REDIS_PORT);
+const redisClient = Redis.createClient();
 // const redisClient = Redis.createClient({
 // 	host: '127.0.0.1',
 // 	port: 6379,
 // });
+redisClient.connect();
 
-const redisClient = Redis.createClient();
+
+// const redisClient = Redis.createClient();
 
 const express = require('express');
 const app = express();
 // const cors = require("cors");
 const db = require('../database/index.js');
 
-const DEFAULT_EXPIRATION = 3600;
+const DEFAULT_EXPIRATION = 180;
 
 // const port = 3000;
 // ^ testing won't work because server is only listening to 1 port.
@@ -29,7 +30,6 @@ const DEFAULT_EXPIRATION = 3600;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // console.dir(req.params.name);
-redisClient.connect();
 
 
 // app.get('/products', (req, res) => {
@@ -70,95 +70,192 @@ app.get('/products', (req, res) => {
 
 // OLD VERSION
 // app.get('/products/:product_id', db.getProductByID);
+redisClient.on('ready', () => {
+	console.log('Connected');
 
-app.get('/products/:product_id', (req, res) => {
+	redisClient.get('test', (err, value) => {
+		if (err) {
+			throw err;
+		}
+		console.log('just checcking!!!');
+		// console.log('Value:', value);
+	})
+});
+
+redisClient.on('error', err => {
+	console.log('Error ' + err);
+});
+
+// function getCacheById(key) {
+//   return new Promise((resv, rej) => {
+//     redisClient.get(key, (err, reply) => {
+//       resv(reply);
+//     });
+//   })
+
+// }
+
+app.get('/products/:product_id', async (req, res) => {
 	const product_id = req.params.product_id;
-	// db.getProductByID.then(results => {
-	// 	res.status(200).send(results);
+
+	var key = `/products/${product_id}`;
+	// getCacheById(key).then(results => {
+	// 	if (results != null) {
+	// 		res.status(200).send(results);
+	// 	}
+	// 	else {
+	// 		console.log('Hello!!');
+	// 		res.status(200).send('HELLOOO!!!');
+	// 	}
 	// })
 	// .catch(error => {
-	// 	res.status(500).send(error);
+	// 	console.log('redis error: ', error);
 	// });
 
-		const cachePromise = new Promise((resolve, reject) => {
-			redisClient.get(`products/${product_id}`, (error, cache) => {
-				if (error) {
-					reject(error);
-				}
-				else {
-					resolve(cache);
-				}
-			});
-		});
-
-		cachePromise.then(cache => {
-			if (cache != null) {
-				console.log('Cache Hit');
-				res.status(200).send(JSON.parse(cache));
+	const value = await redisClient.get(`products/${product_id}`);
+	if (value != null) {
+		// console.log('value is: ', value);
+		res.status(200).send(value);
+	}
+	else {
+		db.getProductByID(product_id, (err, results) => {
+			if (err) {
+				// console.log('getProductByID error: ', err);
+				// res.status(500).send(err);
+				reject(err);
 			}
 			else {
-				console.log('Cache Miss!');
-					console.log('getProductByID is coming here!');
-					const getProductByIDPromise = new Promise((resolve, reject) => {
-						db.getProductByID(product_id, (err, results) => {
-							if (err) {
-								// console.log('getProductByID error: ', err);
-								// res.status(500).send(err);
-								reject(err);
-							}
-							else {
-								// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
-								// redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
-								// res.status(200).send(results);
-								resolve(results);
-							}
-							console.log('inside db.');
-						});
-						console.log('inside big else statement');
-					});
-					getProductByIDPromise.then(results => {
-				  	redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
-						res.status(200).send(results);
-					})
-					.catch(err => {
-						console.log('getProductByIDPromise error: ', err);
-					});
-			};
-		})
-		.catch(error => {
-			console.log('cache promise error: ', error);
+				redisClient.SETEX(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+				res.status(200).send(results);
+			}
+			// console.log('inside db.');
 		});
+		// console.log('inside big else statement');
+	}
 
-	});
+});
 
-		// redisClient.get(`products/${product_id}`, (error, cache) => {
-		// 		console.log('inside redisClient');
-		// 		if (error) {
-		// 			console.error(error);
-		// 		}
-		// 		if (cache != null) {
-		// 			console.log('Cache Hit!');
-		// 			res.status(200).send(JSON.parse(cache));
-		// 		} else {
-		// 			console.log('Cache Miss!');
-		// 			console.log('getProductByID is coming here!');
-		// 			db.getProductByID(product_id, (err, results) => {
-		// 				if (err) {
-		// 					console.log('getProductByID error: ', err);
-		// 					res.status(500).send(err);
-		// 				}
-		// 				else {
-		// 					// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
-		// 					redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
-		// 					res.status(200).send(results);
-		// 				}
-		// 				console.log('inside db.');
-		// 			});
-		// 			console.log('inside big else statement');
-		// 		};
-		// 		console.log('inside redisClient.get');
-		// 	});
-		// 	console.log('end of function');
+
+// cachePromise.then(cache => {
+// 	if (cache != null) {
+// 		console.log('Cache Hit');
+// 		res.status(200).send(JSON.parse(cache));
+// 	}
+// 	else {
+// 		console.log('Cache Miss!');
+// 			console.log('getProductByID is coming here!');
+// 			const getProductByIDPromise = new Promise((resolve, reject) => {
+// 				db.getProductByID(product_id, (err, results) => {
+// 					if (err) {
+// 						// console.log('getProductByID error: ', err);
+// 						// res.status(500).send(err);
+// 						reject(err);
+// 					}
+// 					else {
+// 						// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+// 						// redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+// 						// res.status(200).send(results);
+// 						resolve(results);
+// 					}
+// 					console.log('inside db.');
+// 				});
+// 				console.log('inside big else statement');
+// 			});
+// 			getProductByIDPromise.then(results => {
+// 		  	redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+// 				res.status(200).send(results);
+// 			})
+// 			.catch(err => {
+// 				console.log('getProductByIDPromise error: ', err);
+// 			});
+// 	};
+// })
+// .catch(error => {
+// 	console.log('cache promise error: ', error);
+// });
+
+
+// app.get('/products/:product_id', (req, res) => {
+// 	const product_id = req.params.product_id;
+// 		const cachePromise = new Promise((resolve, reject) => {
+// 			redisClient.get(`products/${product_id}`, (error, cache) => {
+// 				if (error) {
+// 					reject(error);
+// 				}
+// 				else {
+// 					resolve(cache);
+// 				}
+// 			});
+// 		});
+
+// 		cachePromise.then(cache => {
+// 			if (cache != null) {
+// 				console.log('Cache Hit');
+// 				res.status(200).send(JSON.parse(cache));
+// 			}
+// 			else {
+// 				console.log('Cache Miss!');
+// 					console.log('getProductByID is coming here!');
+// 					const getProductByIDPromise = new Promise((resolve, reject) => {
+// 						db.getProductByID(product_id, (err, results) => {
+// 							if (err) {
+// 								// console.log('getProductByID error: ', err);
+// 								// res.status(500).send(err);
+// 								reject(err);
+// 							}
+// 							else {
+// 								// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+// 								// redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+// 								// res.status(200).send(results);
+// 								resolve(results);
+// 							}
+// 							console.log('inside db.');
+// 						});
+// 						console.log('inside big else statement');
+// 					});
+// 					getProductByIDPromise.then(results => {
+// 				  	redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+// 						res.status(200).send(results);
+// 					})
+// 					.catch(err => {
+// 						console.log('getProductByIDPromise error: ', err);
+// 					});
+// 			};
+// 		})
+// 		.catch(error => {
+// 			console.log('cache promise error: ', error);
+// 		});
+
+// 	});
+
+// redisClient.get(`products/${product_id}`, (error, cache) => {
+// 		console.log('inside redisClient');
+// 		if (error) {
+// 			console.error(error);
+// 		}
+// 		if (cache != null) {
+// 			console.log('Cache Hit!');
+// 			res.status(200).send(JSON.parse(cache));
+// 		} else {
+// 			console.log('Cache Miss!');
+// 			console.log('getProductByID is coming here!');
+// 			db.getProductByID(product_id, (err, results) => {
+// 				if (err) {
+// 					console.log('getProductByID error: ', err);
+// 					res.status(500).send(err);
+// 				}
+// 				else {
+// 					// redisClient.setex("products_product_id", DEFAULT_EXPIRATION, JSON.stringify(results));
+// 					redisClient.setex(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
+// 					res.status(200).send(results);
+// 				}
+// 				console.log('inside db.');
+// 			});
+// 			console.log('inside big else statement');
+// 		};
+// 		console.log('inside redisClient.get');
+// 	});
+// 	console.log('end of function');
 
 
 // Cacher middleware
