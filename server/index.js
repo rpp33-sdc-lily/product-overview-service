@@ -78,7 +78,8 @@ app.get('/products/:product_id', async (req, res) => {
 	else {
 		db.getProductByID(product_id, (err, results) => {
 			if (err) {
-				reject(err);
+				console.log(err);
+				res.status(500).send(err);
 			}
 			else {
 				redisClient.SETEX(`products/${product_id}`, DEFAULT_EXPIRATION, JSON.stringify(results));
